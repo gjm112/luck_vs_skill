@@ -1,9 +1,9 @@
 theta <- c(4:1)
-sigma <- 10
+sigma <- 1
 x <- data.frame()
 
 for (q in 1:20){
-  for (j in c(1,5,10,20)){
+  for (j in c(1:10)){
     
 xtemp <- as.data.frame(rbind(c(1, -1, 0, 0),
            c(1, 0, -1, 0),
@@ -48,39 +48,35 @@ stan_data <- list(
 )
 
 fit_rstan <- stan(
-  file = "/Users/gregorymatthews/sports2.stan",
+  file = "./sports2.stan",
   data = stan_data
 )
 summary(fit_rstan)$summary
-
-plot(fit_rstan@sim$samples[[1]]$`sigma`, type = "l")
-str(fit_rstan)
-
 plot(fit_rstan)
 
 
 
 
-
-
-
-
-theta <- c(1,0)
-p <- exp(theta[1]-theta[2])/(1+exp(theta[1] - theta[2]))
-sigma <- 10
-pstar <-c()
-n <- 100
-for (q in 1:100000){
-eps <- c()
-eps[1] <- rnorm(n,0,sigma/n)
-eps[2] <- rnorm(n,0,sigma/n)
-xbeps <- theta[1] + eps[1] - theta[2] - eps[2]
-pstar[q]  <- exp(xbeps)/(1+exp(xbeps))
-}
-hist(pstar)
-
-mean(rbinom(length(pstar),1,pstar))
-
-rbinom(length(pstar),1,pstar)
-p
-
+# 
+# 
+# 
+# 
+# theta <- c(1,0)
+# p <- exp(theta[1]-theta[2])/(1+exp(theta[1] - theta[2]))
+# sigma <- 10
+# pstar <-c()
+# n <- 100
+# for (q in 1:100000){
+# eps <- c()
+# eps[1] <- rnorm(n,0,sigma/n)
+# eps[2] <- rnorm(n,0,sigma/n)
+# xbeps <- theta[1] + eps[1] - theta[2] - eps[2]
+# pstar[q]  <- exp(xbeps)/(1+exp(xbeps))
+# }
+# hist(pstar)
+# 
+# mean(rbinom(length(pstar),1,pstar))
+# 
+# rbinom(length(pstar),1,pstar)
+# p
+# 
