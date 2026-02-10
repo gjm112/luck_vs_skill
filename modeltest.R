@@ -1,9 +1,10 @@
-alpha <- 0
-beta <- 0.1
-theta <- c(1,0)
+#sigma 10, n 1, beta 3 is beautiful 
+#alpha <- 0
+beta <- 0
+theta <- c(.1,0)
 n <- 1
 s <- seq(-3,3,0.1)
-sigma <- 0.5
+sigma <- 1
 #y <- 1/2 + (1-alpha)*(1-exp(-n))*(plogis(sqrt(n)*beta*(s)) - 1/2)
 eps <- rnorm(1,0,sigma/sqrt(n))
 y <- plogis(n*beta*(s) + eps)

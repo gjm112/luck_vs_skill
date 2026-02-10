@@ -5,7 +5,7 @@ set.seed(123)
 
 # Parameters
 N_team <- 6         # number of teams
-n_games <- 20       # total matches
+n_games <- 1000       # total matches
 sigma_true <- 0.5   # luck magnitude
 beta_true <- 1.2    # skill scaling
 
@@ -49,7 +49,7 @@ data {
 }
 
 parameters {
-  vector[N_team] theta;
+  vector[N_team - 1] theta_free;
   real<lower=0> beta;
   real<lower=0> sigma;
   vector[M] eps_raw;
@@ -58,8 +58,15 @@ parameters {
 transformed parameters {
   vector[M] eps;
   vector[M] logit_p;
-
+  vector[N_team] theta;
+  
+  theta[N_team] = 0;
+  for (t in 1:(N_team-1)){
+    theta[t] = theta_free[t];
+  }
+  
   for (m in 1:M) {
+  
     eps[m] = eps_raw[m] * (sigma / sqrt(n[m]));
     logit_p[m] = beta * n[m] * (theta[team_i[m]] - theta[team_j[m]]) + eps[m];
   }
@@ -71,6 +78,7 @@ model {
   beta ~ normal(0, 1);
   sigma ~ normal(0, 1);
   eps_raw ~ normal(0, 1);
+  
   y ~ bernoulli_logit(logit_p);
 }
 
