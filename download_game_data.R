@@ -72,13 +72,14 @@ load_nfl_quarterly_scores <- function() {
 mlb_cache_path <- "./mlb_statcast/"
 download_mlb_statcast <- function() {
   search_dates <- seq(
-    ymd("2015-01-01"),
+    ymd("2015-03-01"),
     ymd("2026-01-01"),
     by = "day"
   ) |>
     format("%Y-%m-%d")
   for (date in search_dates) {
     file_path <- paste0(mlb_cache_path, "gameday_", date, ".parquet")
+    print(file_path)
     if (!file.exists(file_path)) {
       gameday <- baseballr::statcast_search(date, date) |> as_tibble()
       if (nrow(gameday) > 0) {
