@@ -1,4 +1,4 @@
-stan_model_code <- "
+
 data {
   int<lower=1> M;
   int<lower=1> N_team;

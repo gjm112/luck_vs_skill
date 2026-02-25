@@ -49,6 +49,8 @@ data {
 parameters {
   vector[N_team - 1] theta_free;
   real<lower=0> sigma;
+  real<lower=0> alpha;
+  real<lower=0> beta;
   vector[M] eps_raw;
 }
 
@@ -65,7 +67,7 @@ transformed parameters {
   for (m in 1:M) {
   
     eps[m] = eps_raw[m] * (sigma / sqrt(n[m]));
-    logit_p[m] = sqrt(n[m]) * (theta[team_i[m]] - theta[team_j[m]]) + eps[m];
+    logit_p[m] = n[m]^alpha * (theta[team_i[m]] - theta[team_j[m]]) + eps[m];
   }
 }
 
@@ -74,6 +76,8 @@ model {
   theta ~ normal(0, 1);
   sigma ~ normal(0, 1);
   eps_raw ~ normal(0, 1);
+  alpha ~ normal(1, 0.5);
+  
   
   y ~ bernoulli_logit(logit_p);
 }
@@ -82,8 +86,8 @@ generated quantities {
   vector[M] p_hat;
   vector[M] p_hat_fix;
   for (m in 1:M){
-    p_hat[m] = inv_logit(sqrt(n[m]) * (theta[team_i[m]] - theta[team_j[m]]) +  eps[m]);
-    p_hat_fix[m] = inv_logit(sqrt(n[m]) * (theta[team_i[m]] - theta[team_j[m]]));
+    p_hat[m] = inv_logit(n[m]^alpha * (theta[team_i[m]] - theta[team_j[m]]) +  eps[m]);
+    p_hat_fix[m] = inv_logit(n[m]^alpha * (theta[team_i[m]] - theta[team_j[m]]));
   }
 }
 "
@@ -92,15 +96,15 @@ generated quantities {
 #                  iter = 2000, chains = 4, seed = 123)
 
 fit <- stan(model_code = stan_model_code, data = stan_data,
-                   iter = 2000, chains = 4, seed = 123)
+            iter = 2000, chains = 4, seed = 123)
 
 
-print(fit, pars = c("theta", "alpha", "sigma"))
+print(fit, pars = c("theta",  "sigma","alpha","beta"))
 print(fit_random, pars = c("theta", "sigma"))
 
 s <- 0.1
 plogis(1:9*s)
-plogis(sqrt(1:9)*s)
+plogis((1:9)^0.05*s)
 
 str(fit)
 

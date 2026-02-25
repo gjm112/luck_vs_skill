@@ -4,15 +4,15 @@ beta <- 0
 theta <- c(.1, 0)
 n <- 1
 s <- seq(-3, 3, 0.1)
-sigma <- 1
+sigma <- 10
 # y <- 1/2 + (1-alpha)*(1-exp(-n))*(plogis(sqrt(n)*beta*(s)) - 1/2)
 eps <- rnorm(1, 0, sigma / sqrt(n))
-y <- plogis(n * beta * (s) + eps)
+y <- plogis(n * (s) + eps)
 plot(s, y, type = "l", ylim = c(0, 1), col = rgb(0, 0, 0, 0.01))
 vec <- c()
 for (i in 1:10000) {
   eps <- rnorm(1, 0, sigma / sqrt(n))
-  y <- plogis(n * beta * (s) + eps)
+  y <- plogis(n * (s) + eps)
   vec[i] <- rbinom(1, 1, y)
   points(s, y, type = "l", ylim = c(0, 1), col = rgb(0, 0, 0, 0.01))
 }
