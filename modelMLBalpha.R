@@ -94,26 +94,66 @@ generated quantities {
 #fit_random <- stan(model_code = stan_model_code, data = stan_data,
 #                  iter = 2000, chains = 4, seed = 123)
 
-fit <- stan(model_code = stan_model_code, data = stan_data,
+fitmlb <- stan(model_code = stan_model_code, data = stan_data,
             iter = 2000, chains = 4, seed = 123)
 
 
-print(fit, pars = c("theta",  "sigma","alpha"))
-print(fit_random, pars = c("theta", "sigma"))
+print(fitmlb, pars = c("theta",  "sigma","alpha"))
+
 
 s <- 1
 plogis(1:9*s)
 plogis(((1:9)/9)^0.91*s)
 
-s <- 0.1
-plot(plogis(((1:9)/9)^0.91*s), ylim = c(0,1), type = "l")
-points(plogis(((1:9)/9)^0.91*s + 2.73/sqrt((1:9/9))), type = "l")
-points(plogis(((1:9)/9)^0.91*s - 2.73/sqrt((1:9/9))), type = "l")
+s <- 0.5
+alpha <- 0.91
+sigma <- 2.73
+plot((0:9)/9,plogis(((0:9)/9)^0.91*s), ylim = c(0,1), type = "l")
+points((0:9)/9,plogis(((0:9)/9)^0.91*s + 2.73/sqrt((0:9/9))), type = "l")
+points((0:9)/9,plogis(((0:9)/9)^0.91*s - 2.73/sqrt((0:9/9))), type = "l")
+
+#nfl
+alpha <- 1.14
+sigma <- 0.79
+points(0:4/4,plogis(((0:4)/4)^alpha*s), ylim = c(0,1), type = "l", col = "red")
+points((0:4)/4,plogis(((0:4)/4)^alpha*s + sigma/sqrt((0:4/4))), type = "l", col = "red")
+points((0:4)/4,plogis(((0:4)/4)^alpha*s - sigma/sqrt((0:4/4))), type = "l", col = "red")
 
 
 
+s <- 3
+alpha <- 0.91
+sigma <- 2.73
+mlb <- function(x){mean(plogis((x/9)^alpha*s + rnorm(100000,0,sigma/sqrt(x/9))))}
+mlb <- Vectorize(mlb)
+mlb(1:9)
 
-str(fit)
+s <- 1
+res <- data.frame()
+for (s in seq(-3,3,0.5)){
+alpha <- 1.14
+sigma <- 0.79
+nfl <- function(x){mean(plogis((x/4)^alpha*s + rnorm(100000,0,sigma/sqrt(x/4))))}
+nfl <- Vectorize(nfl)
+res <- rbind(res,data.frame(s = s,i = c(0.1,1:4)/4,p = nfl(c(0.1,1:4)), sport = "nfl"))
+}
+
+
+for (s in seq(-3,3,0.1)){
+  alpha <- 0.91
+  sigma <- 2.73
+  mlb <- function(x){mean(plogis((x/9)^alpha*s + rnorm(100000,0,sigma/sqrt(x/9))))}
+  mlb <- Vectorize(mlb)
+  res <- rbind(res,data.frame(s = s,i = c(0.1,1:9)/9,p = mlb(c(0.1,1:9)), sport = "mlb"))
+}
+
+#res %>% ggplot(aes(x = i, y = p, col = s, group = s)) + geom_point() + geom_line() + facet_grid(~sport)
+res %>% ggplot(aes(x = i, y = p, col = sport, group = paste0(s,sport)))  + geom_line(alpha = 0.75)  + theme_bw()
+
+stuf <- data.frame(sport = c("nfl","mlb"), sigma = c(0.79,2.73), alpha = c(1.14,0.91))
+ggplot(aes(x = sigma, y = alpha), data = stuf) + geom_point() + geom_text(aes(label = sport))
+
+
 
 traceplot(fit, pars = c("sigma"))
 library(rstan)       # Interface to Stan
