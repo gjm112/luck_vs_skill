@@ -15,6 +15,4 @@ repl$league <- "RFPL"
 serie_a <- read_csv(paste0(cache_path, "/", "Serie_A_shot_data.csv")) |> select(!c(X, Y, xG))
 serie_a$league <- "Serie A"
 league <- bind_rows(bundesliga, elp, la_liga, repl, serie_a) |> filter(result == "Goal")
-
-league |>
-  select(league, season, match_id, minute, result, h_team, a_team, h_goals, a_goals)
+league |> arrow::write_parquet("leagues_shot_data.parquet")
