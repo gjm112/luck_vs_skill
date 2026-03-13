@@ -103,4 +103,4 @@ home_away <- left_join(match_minutes, league, by = c("minute", "match_id")) |>
 
 home_away |>
   arrange(match_id, minute_bucket) |>
-  write_rds("soccer_leagues.rds")
+  write_rds("soccer_league_scores_by_15_mins.rds")
