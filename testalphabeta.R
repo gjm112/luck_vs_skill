@@ -7,7 +7,7 @@ set.seed(123)
 N_team <- 3         # number of teams
 n_games <- 1000    # total matches
 sigma_true <- 0.5   # luck magnitude
-alpha_true <- 0.05
+alpha_true <- 0.3
 
 # True team abilities
 theta_true <- rnorm(N_team, 0, 1)

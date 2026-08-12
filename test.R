@@ -22,8 +22,8 @@ matches$n <- runif(nrow(matches), 1, 5) # game length varies between 1 and 5
 
 # Simulate outcomes
 matches$y <- mapply(function(i, j, n_len){
-  eps <- rnorm(1, 0, sigma_true / sqrt(n_len))
-  p <- plogis(beta_true * n_len * (theta_true[i] - theta_true[j]) + eps)
+  eps <- rnorm(1, 0, sigma_true / n_len^0.08)
+  p <- plogis(n_len^0.05 * (theta_true[i] - theta_true[j]) + eps)
   rbinom(1, 1, p)
 }, matches$team_i, matches$team_j, matches$n)
 
