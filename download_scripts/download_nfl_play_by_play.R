@@ -1,12 +1,18 @@
 library(tibble)
 library(dplyr)
+library(readr)
+library(purrr)
+
+# NOTE: This script needs to be run from the top-level directory.
+# That is, Rscript download_scripts/download_nfl_play_by_play.R
 
 nfl_cache_path <- "./nfl_play_by_play/"
-nfl_rds_file <- "nfl_pbp.rds"
+nfl_rds_file <- "./nfl_pbp.rds"
+scores_per_quarter <- "./nfl_scores_by_quarter.rds"
 
 download_nfl_play_by_play <- function() {
   if (!file.exists(nfl_cache_path)) {
-    stop("nfl_cache_path does not exist")
+    dir.create(nfl_cache_path)
   }
   first_recorded_season <- 1999
   current_season <- 2025
@@ -16,7 +22,10 @@ download_nfl_play_by_play <- function() {
     )
     if (!file.exists(file_path)) {
       season_data <- nflreadr::load_pbp(season_year) |> as_tibble()
-      saveRDS(season_data, file_path)
+      if (nrow(season_data) > 0) {
+        write_rds(season_data, file_path)
+      }
+      Sys.sleep(3)
     }
   }
 }
@@ -25,16 +34,11 @@ concat_nfl_play_by_play <- function() {
   if (!file.exists(nfl_cache_path)) {
     stop("nfl_cache_path does not exist")
   }
-  files <- list.files(nfl_cache_path)
-  pbp_list <- list()
-  for (file in files) {
-    if (file.exists(file)) {
-      pbp_season <- readRDS(file)
-      pbp_list <- append(pbp_list, pbp_season)
-    }
-  }
-  pbp <- bind_rows(pbp_list) |> as_tibble()
-  saveRDS(pbp, nfl_rds_file)
+  files <- list.files(nfl_cache_path, pattern = "\\.rds$", full.names = TRUE)
+  map(files, read_rds) |>
+    list_rbind() |>
+    as_tibble() |>
+    write_rds(file = nfl_rds_file)
 }
 
 determine_winner_scalar <- function(home_score, away_score) {
@@ -50,10 +54,10 @@ determine_winner_scalar <- function(home_score, away_score) {
 
 determine_winner <- Vectorize(determine_winner_scalar)
 
-load_nfl_quarterly_scores <- function() {
-  cache_path <- "./nfl_scores_by_quarter.rds"
-  nfl_pbp <- readRDS(nfl_rds_file)
-  scores_per_quarter <- nfl_pbp |>
+transform_nfl_quarter_scores <- function() {
+  nfl_pbp <- read_rds(nfl_rds_file)
+  transformed_scores_per_quarter <- nfl_pbp |>
+    # We deliberately only want regular season games.
     filter(season_type == "REG") |>
     group_by(game_id, season, game_date, qtr, home_team, away_team) |>
     summarize(
@@ -63,5 +67,9 @@ load_nfl_quarterly_scores <- function() {
     ungroup() |>
     mutate(yij = determine_winner(home_score, away_score))
 
-  saveRDS(scores_per_quarter, cache_path)
+  write_rds(transformed_scores_per_quarter, scores_per_quarter)
 }
+
+download_nfl_play_by_play()
+concat_nfl_play_by_play()
+transform_nfl_quarter_scores()

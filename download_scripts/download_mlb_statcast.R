@@ -1,16 +1,20 @@
 library(tibble)
 library(dplyr)
 library(lubridate)
+library(readr)
+library(purrr)
+
+# NOTE: This script needs to be run from the top-level directory.
+# That is, Rscript download_scripts/download_mlb_data.R
 
 mlb_cache_path <- "./mlb_statcast/"
-mlb_rds_file <- "mlb_statscast.rds"
-scores_per_inning <- "scores_per_inning.rds"
+mlb_rds_file <- "./mlb_statcast.rds"
+scores_per_inning <- "./scores_per_inning.rds"
 
 download_mlb_statcast <- function() {
   if (!file.exists(mlb_cache_path)) {
-    stop("mlb_cache_path does not exist")
+    dir.create(mlb_cache_path)
   }
-
   search_dates <- seq(
     ymd("2015-03-01"),
     ymd("2026-09-01"),
@@ -23,8 +27,9 @@ download_mlb_statcast <- function() {
     if (!file.exists(file_path)) {
       gameday <- baseballr::statcast_search(date, date) |> as_tibble()
       if (nrow(gameday) > 0) {
-        saveRDS(gameday, file_path)
+        write_rds(gameday, file_path)
       }
+      Sys.sleep(3)
     }
   }
 }
@@ -33,16 +38,11 @@ concat_mlb_statcast <- function() {
   if (!file.exists(mlb_cache_path)) {
     stop("mlb_cache_path does not exist")
   }
-  files <- list.files(mlb_cache_path)
-  games_list <- list()
-  for (file in files) {
-    if (file.exists(file)) {
-      gameday <- readRDS(file)
-      games_list <- append(games_list, gameday)
-    }
-  }
-  games <- bind_rows(games_list) |> as_tibble()
-  saveRDS(games, mlb_rds_file)
+  files <- list.files(mlb_cache_path, pattern = "\\.rds$", full.names = TRUE)
+  map(files, read_rds) |>
+    list_rbind() |>
+    as_tibble() |>
+    write_rds(file = mlb_rds_file)
 }
 
 determine_winner_scalar <- function(home_score, away_score) {
@@ -56,12 +56,15 @@ determine_winner_scalar <- function(home_score, away_score) {
   y
 }
 
+determine_winner <- Vectorize(determine_winner_scalar)
+
 transform_mlb_inning_scores <- function() {
   if (!file.exists(mlb_rds_file)) {
-    stop("mlb_statscast.rds does not exist")
+    stop("mlb_statcast.rds does not exist")
   }
-  mlb_statcast <- readRDS(mlb_rds_file)
+  mlb_statcast <- read_rds(mlb_rds_file)
   tranformed_scores_per_inning <- mlb_statcast |>
+    # We deliberately only want regular season games.
     filter(game_type == "R") |>
     group_by(game_pk, game_date, inning, home_team, away_team) |>
     summarize(
@@ -72,7 +75,7 @@ transform_mlb_inning_scores <- function() {
     mutate(yij = determine_winner(home_score, away_score)) |>
     arrange(game_pk, inning)
 
-  saveRDS(tranformed_scores_per_inning, scores_per_inning)
+  write_rds(tranformed_scores_per_inning, scores_per_inning)
 }
 
 download_mlb_statcast()
