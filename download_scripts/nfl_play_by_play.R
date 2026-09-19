@@ -4,7 +4,7 @@ library(readr)
 library(purrr)
 
 # NOTE: This script needs to be run from the top-level directory.
-# That is, Rscript download_scripts/download_nfl_play_by_play.R
+# That is, Rscript download_scripts/nfl_play_by_play.R
 
 nfl_cache_path <- "./nfl_play_by_play/"
 nfl_rds_file <- "./nfl_pbp.rds"

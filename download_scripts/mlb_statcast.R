@@ -5,7 +5,7 @@ library(readr)
 library(purrr)
 
 # NOTE: This script needs to be run from the top-level directory.
-# That is, Rscript download_scripts/download_mlb_data.R
+# That is, Rscript download_scripts/mlb_statcast.R
 
 mlb_cache_path <- "./mlb_statcast/"
 mlb_rds_file <- "./mlb_statcast.rds"
