@@ -1,10 +1,16 @@
-library(tidyverse)
+library(tibble)
+library(dplyr)
+library(lubridate)
 
 mlb_cache_path <- "./mlb_statcast/"
 mlb_rds_file <- "mlb_statscast.rds"
 scores_per_inning <- "scores_per_inning.rds"
 
 download_mlb_statcast <- function() {
+  if (!file.exists(mlb_cache_path)) {
+    stop("mlb_cache_path does not exist")
+  }
+
   search_dates <- seq(
     ymd("2015-03-01"),
     ymd("2026-09-01"),
@@ -35,13 +41,12 @@ concat_mlb_statcast <- function() {
       games_list <- append(games_list, gameday)
     }
   }
-  games <- bind_rows(games_list)
-  saveRDS(games |> as_tibble(), mlb_rds_file)
+  games <- bind_rows(games_list) |> as_tibble()
+  saveRDS(games, mlb_rds_file)
 }
 
 determine_winner_scalar <- function(home_score, away_score) {
-  if (home_score >
-    away_score) {
+  if (home_score > away_score) {
     y <- 1
   } else if (home_score < away_score) {
     y <- -1
