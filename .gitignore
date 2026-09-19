@@ -1,0 +1,35 @@
+# R session / workspace artifacts
+.RData
+.Rproj.user
+.Rhistory
+.Rapp.history
+.Ruserdata
+.Renviron
+
+# RStudio files
+*.Rproj
+
+# R output and saved objects
+*.Rout
+*.Rout.save
+
+# Saved R data objects
+*.rds
+
+# knitr / R Markdown / Quarto caches
+*_cache/
+*_files/
+/cache/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# renv
+# renv/library, renv/staging, renv/local, renv/cellar and renv/lock are
+# already ignored by renv/.gitignore; renv.lock is intentionally tracked.
