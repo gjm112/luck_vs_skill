@@ -1,11 +1,13 @@
 library(tidyverse)
 
 mlb_cache_path <- "./mlb_statcast/"
+mlb_rds_file <- "mlb_statscast.rds"
+scores_per_inning <- "scores_per_inning.rds"
 
 download_mlb_statcast <- function() {
   search_dates <- seq(
     ymd("2015-03-01"),
-    ymd("2026-01-01"),
+    ymd("2026-09-01"),
     by = "day"
   ) |>
     format("%Y-%m-%d")
@@ -21,28 +23,25 @@ download_mlb_statcast <- function() {
   }
 }
 
-download_and_concat_mlb_statcast <- function() {
-  mlb_rds_file <- "mlb_statscast.rds"
-  if (file.exists(mlb_rds_file)) {
-    games <- readRDS(mlb_rds_file)
-  } else {
-    files <- list.files(mlb_cache_path)
-    games_list <- list()
-    for (file in files) {
-      if (file.exists(file)) {
-        gameday <- readRDS(file)
-        games_list <- append(games_list, gameday)
-      }
-    }
-    games <- bind_rows(games_list)
-    saveRDS(games |> as_tibble(), mlb_rds_file)
+concat_mlb_statcast <- function() {
+  if (!file.exists(mlb_cache_path)) {
+    stop("mlb_cache_path does not exist")
   }
-  games
+  files <- list.files(mlb_cache_path)
+  games_list <- list()
+  for (file in files) {
+    if (file.exists(file)) {
+      gameday <- readRDS(file)
+      games_list <- append(games_list, gameday)
+    }
+  }
+  games <- bind_rows(games_list)
+  saveRDS(games |> as_tibble(), mlb_rds_file)
 }
 
 determine_winner_scalar <- function(home_score, away_score) {
   if (home_score >
-      away_score) {
+    away_score) {
     y <- 1
   } else if (home_score < away_score) {
     y <- -1
@@ -52,25 +51,25 @@ determine_winner_scalar <- function(home_score, away_score) {
   y
 }
 
-load_mlb_inning_scores <- function() {
-  mlb_games <- load_mlb_statcast()()
-  cache_path <- "./mlb_scores_by_inning.rds"
-  if (file.exists(cache_path)) {
-    scores_per_inning <- readRDS(cache_path)
-  } else {
-    scores_per_inning <- mlb_games |>
-      filter(game_type == "R") |>
-      group_by(game_pk, game_date, inning, home_team, away_team) |>
-      summarize(
-        home_score = max(post_home_score),
-        away_score = max(post_away_score)
-      ) |>
-      ungroup() |>
-      mutate(yij = determine_winner(home_score, away_score)) |>
-      arrange(game_pk, inning)
-
-    saveRDS(scores_per_inning, cache_path)
+transform_mlb_inning_scores <- function() {
+  if (!file.exists(mlb_rds_file)) {
+    stop("mlb_statscast.rds does not exist")
   }
-  scores_per_inning
+  mlb_statcast <- readRDS(mlb_rds_file)
+  tranformed_scores_per_inning <- mlb_statcast |>
+    filter(game_type == "R") |>
+    group_by(game_pk, game_date, inning, home_team, away_team) |>
+    summarize(
+      home_score = max(post_home_score),
+      away_score = max(post_away_score)
+    ) |>
+    ungroup() |>
+    mutate(yij = determine_winner(home_score, away_score)) |>
+    arrange(game_pk, inning)
+
+  saveRDS(tranformed_scores_per_inning, scores_per_inning)
 }
 
+download_mlb_statcast()
+concat_mlb_statcast()
+transform_mlb_inning_scores()
