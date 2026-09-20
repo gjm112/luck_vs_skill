@@ -4,6 +4,8 @@ library(lubridate)
 library(readr)
 library(purrr)
 
+source(here("utility.R"))
+
 # NOTE: This script needs to be run from the top-level directory.
 # That is, Rscript download_scripts/mlb_statcast.R
 
@@ -44,19 +46,6 @@ concat_mlb_statcast <- function() {
     as_tibble() |>
     write_rds(file = mlb_rds_file)
 }
-
-determine_winner_scalar <- function(home_score, away_score) {
-  if (home_score > away_score) {
-    y <- 1
-  } else if (home_score < away_score) {
-    y <- -1
-  } else {
-    y <- 0
-  }
-  y
-}
-
-determine_winner <- Vectorize(determine_winner_scalar)
 
 transform_mlb_inning_scores <- function() {
   if (!file.exists(mlb_rds_file)) {

@@ -2,6 +2,9 @@ library(tibble)
 library(dplyr)
 library(readr)
 library(purrr)
+library(here)
+
+source(here("utility.R"))
 
 # NOTE: This script needs to be run from the top-level directory.
 # That is, Rscript download_scripts/nfl_play_by_play.R
@@ -41,19 +44,6 @@ concat_nfl_play_by_play <- function() {
     as_tibble() |>
     write_rds(file = nfl_rds_file)
 }
-
-determine_winner_scalar <- function(home_score, away_score) {
-  if (home_score > away_score) {
-    y <- 1
-  } else if (home_score < away_score) {
-    y <- -1
-  } else {
-    y <- 0
-  }
-  y
-}
-
-determine_winner <- Vectorize(determine_winner_scalar)
 
 transform_nfl_quarter_scores <- function() {
   nfl_pbp <- read_rds(nfl_rds_file)
