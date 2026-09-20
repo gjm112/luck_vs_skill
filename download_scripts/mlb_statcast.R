@@ -16,17 +16,17 @@ download_mlb_statcast <- function() {
     dir.create(mlb_cache_path)
   }
   search_dates <- seq(
-    ymd("2015-03-01"),
+    ymd("2017-07-24"),
     ymd("2026-09-01"),
     by = "day"
   ) |>
     format("%Y-%m-%d")
   for (date in search_dates) {
     file_path <- paste0(mlb_cache_path, "gameday_", date, ".rds")
-    print(file_path)
     if (!file.exists(file_path)) {
       gameday <- baseballr::statcast_search(date, date) |> as_tibble()
       if (nrow(gameday) > 0) {
+        print(file_path)
         write_rds(gameday, file_path)
       }
       Sys.sleep(3)

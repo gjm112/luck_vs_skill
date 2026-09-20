@@ -23,6 +23,7 @@ download_nfl_play_by_play <- function() {
     if (!file.exists(file_path)) {
       season_data <- nflreadr::load_pbp(season_year) |> as_tibble()
       if (nrow(season_data) > 0) {
+        print(file_path)
         write_rds(season_data, file_path)
       }
       Sys.sleep(3)
