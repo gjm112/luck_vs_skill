@@ -15,6 +15,8 @@
 
 # Saved R data objects
 *.rds
+*.parquet
+*.duckdb
 
 # knitr / R Markdown / Quarto caches
 *_cache/
