@@ -4,7 +4,7 @@ library(readr)
 library(purrr)
 library(here)
 
-source(here("utility.R"))
+source("download_scripts/utility.R")
 
 # NOTE: This script needs to be run from the top-level directory.
 # That is, Rscript download_scripts/nfl_play_by_play.R

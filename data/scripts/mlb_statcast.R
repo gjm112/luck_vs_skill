@@ -4,7 +4,7 @@ library(lubridate)
 library(readr)
 library(purrr)
 
-source(here("utility.R"))
+source("download_scripts/utility.R")
 
 # NOTE: This script needs to be run from the top-level directory.
 # That is, Rscript download_scripts/mlb_statcast.R
@@ -18,8 +18,8 @@ download_mlb_statcast <- function() {
     dir.create(mlb_cache_path)
   }
   search_dates <- seq(
-    ymd("2017-07-24"),
-    ymd("2026-09-01"),
+    ymd("2026-08-01"),
+    ymd("2026-09-22"),
     by = "day"
   ) |>
     format("%Y-%m-%d")
