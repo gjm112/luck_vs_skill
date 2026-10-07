@@ -1,26 +1,33 @@
 library(tidyverse)
 library(duckdb)
 library(cmdstanr)
-library(posterior)
-library(bayesplot)
-color_scheme_set("brightblue")
 
 con <- dbConnect(duckdb(), dbdir = "./data/game_data.duckdb", read_only = TRUE)
-mlb_score_per_inning <- dbGetQuery(con, "SELECT * FROM mlb_score_per_inning WHERE inning <= 9;") |>
+mlb_score_per_inning <- dbGetQuery(
+  con,
+  "SELECT *
+  FROM mlb_score_per_inning
+  WHERE inning <= 9
+  AND date_part('year', game_date) = 2026
+  ORDER BY random();"
+) |>
   as_tibble() |>
-  filter(home_team == "SD", year(game_date) == 2026) |>
-  select(home_scored_in_inning)
+  mutate(
+    home_team = as_factor(home_team)
+  )
+
+home_team <- mlb_score_per_inning$home_team
+# team_indictator <- model.matrix(~home_team)
 
 model <- cmdstan_model("./modeling/model.stan")
+
 data_list <- list(
-  N = length(mlb_score_per_inning$home_scored_in_inning),
+  N = nrow(mlb_score_per_inning),
+  num_teams = length(unique(home_team)),
+  home_team = as.integer(home_team),
   home_scored_in_inning = mlb_score_per_inning$home_scored_in_inning
 )
-test <- rnbinom(10000, 10, 0.3)
-data_list <- list(
-  N = length(test),
-  home_scored_in_inning = test
-)
+
 
 fit <- model$sample(
   data = data_list,
@@ -30,4 +37,4 @@ fit <- model$sample(
   refresh = 500 # print update every 500 iters
 )
 
-print(fit$summary())
+fit$save_object("./modeling/home_scored_in_inning_model.rds")
